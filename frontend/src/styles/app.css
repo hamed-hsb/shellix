@@ -63,4 +63,177 @@ body {
     position: relative;
     flex: 1 1 auto;
     min-height: 0;
+    display: flex;
+}
+
+/* ---- Tab bar ---- */
+
+.tab-bar {
+    display: flex;
+    align-items: stretch;
+    height: var(--sx-tabbar-height);
+    min-height: var(--sx-tabbar-height);
+    background-color: var(--sx-bg-elevated);
+    border-bottom: 1px solid var(--sx-border);
+    /* Leave room for the macOS traffic-light buttons on the hidden titlebar. */
+    padding-left: 4px;
+    -webkit-app-region: drag;
+}
+
+.tab-list {
+    display: flex;
+    align-items: stretch;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-app-region: no-drag;
+}
+
+.tab-list::-webkit-scrollbar {
+    display: none;
+}
+
+.tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 10px;
+    max-width: 200px;
+    border-right: 1px solid var(--sx-border);
+    color: var(--sx-fg-muted);
+    font-size: 13px;
+    cursor: default;
+    white-space: nowrap;
+}
+
+.tab:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+    color: var(--sx-fg);
+}
+
+.tab-active {
+    background-color: var(--sx-bg);
+    color: var(--sx-fg);
+    box-shadow: inset 0 -2px 0 0 var(--sx-accent);
+}
+
+.tab-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tab-rename {
+    background-color: var(--sx-bg);
+    color: var(--sx-fg);
+    border: 1px solid var(--sx-accent);
+    border-radius: 3px;
+    font-size: 13px;
+    padding: 1px 4px;
+    outline: none;
+    width: 120px;
+}
+
+.tab-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    color: inherit;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.tab-close:hover {
+    background-color: var(--sx-danger);
+    color: #fff;
+}
+
+.tab-new {
+    -webkit-app-region: no-drag;
+    border: none;
+    background: transparent;
+    color: var(--sx-fg-muted);
+    font-size: 18px;
+    width: 34px;
+    cursor: pointer;
+}
+
+.tab-new:hover {
+    color: var(--sx-fg);
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* ---- Split panes ---- */
+
+.split-root {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+}
+
+.split {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+}
+
+.split-vertical {
+    flex-direction: row;
+}
+
+.split-horizontal {
+    flex-direction: column;
+}
+
+.pane-leaf {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid transparent;
+}
+
+.pane-leaf.active {
+    border-color: rgba(88, 166, 255, 0.5);
+}
+
+.split-divider {
+    flex: 0 0 auto;
+    background-color: var(--sx-border);
+    z-index: 2;
+}
+
+.split-divider:hover {
+    background-color: var(--sx-accent);
+}
+
+.split-divider-vertical {
+    width: 4px;
+    cursor: col-resize;
+}
+
+.split-divider-horizontal {
+    height: 4px;
+    cursor: row-resize;
+}
+
+body.resizing {
+    cursor: crosshair;
+    user-select: none;
+}
+
+body.resizing * {
+    pointer-events: none;
+}
+
+body.resizing .split-divider {
+    pointer-events: auto;
 }

@@ -1,16 +1,16 @@
-// Phase 1 entry point: open a single local-shell terminal that fills the
-// window. Phase 2 replaces this with the tabbed, splittable workspace.
+// Application entry point: mount the tabbed, splittable workspace.
 
 import '@xterm/xterm/css/xterm.css';
 import './styles/app.css';
 
-import { TerminalView } from './terminal/TerminalView';
+import { Workspace } from './app/Workspace';
+import { DEFAULT_CONFIG } from './config/config';
 
 const root = document.getElementById('app');
 if (!root) {
     throw new Error('#app root element not found');
 }
 
-const view = new TerminalView();
-root.appendChild(view.element);
-void view.start();
+const workspace = new Workspace(DEFAULT_CONFIG);
+root.appendChild(workspace.element);
+void workspace.init();
