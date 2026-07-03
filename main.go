@@ -6,27 +6,43 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/linux"
+	"github.com/wailsapp/wails/v2/pkg/options/mac"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
 //go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {
-	// Create an instance of the app structure
 	app := NewApp()
 
-	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  "shellix",
-		Width:  1024,
-		Height: 768,
+		Title:     "Shellix",
+		Width:     1100,
+		Height:    720,
+		MinWidth:  640,
+		MinHeight: 400,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
-		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		// Dark background matching the default terminal theme avoids a white
+		// flash while the frontend boots.
+		BackgroundColour: &options.RGBA{R: 13, G: 17, B: 23, A: 1},
 		OnStartup:        app.startup,
+		OnShutdown:       app.shutdown,
 		Bind: []interface{}{
 			app,
+		},
+		Windows: &windows.Options{
+			WebviewIsTransparent: false,
+			WindowIsTranslucent:  false,
+		},
+		Mac: &mac.Options{
+			TitleBar: mac.TitleBarHiddenInset(),
+		},
+		Linux: &linux.Options{
+			WindowIsTranslucent: false,
 		},
 	})
 
