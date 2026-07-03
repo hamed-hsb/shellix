@@ -17,3 +17,15 @@ export function ResizeSession(arg1, arg2, arg3) {
 export function CloseSession(arg1) {
     return window['go']['main']['App']['CloseSession'](arg1);
 }
+
+export function GetConfig() {
+    return window['go']['main']['App']['GetConfig']();
+}
+
+export function SaveConfig(arg1) {
+    return window['go']['main']['App']['SaveConfig'](arg1);
+}
+
+export function GetConfigPath() {
+    return window['go']['main']['App']['GetConfigPath']();
+}

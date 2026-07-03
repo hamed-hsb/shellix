@@ -15,3 +15,9 @@ export function SendInput(arg1: string, arg2: string): Promise<void>;
 export function ResizeSession(arg1: string, arg2: number, arg3: number): Promise<void>;
 
 export function CloseSession(arg1: string): Promise<void>;
+
+export function GetConfig(): Promise<Record<string, any>>;
+
+export function SaveConfig(arg1: Record<string, any>): Promise<void>;
+
+export function GetConfigPath(): Promise<string>;

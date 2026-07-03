@@ -1,16 +1,22 @@
-// Application entry point: mount the tabbed, splittable workspace.
+// Application entry point: load settings, then mount the tabbed, splittable
+// workspace.
 
 import '@xterm/xterm/css/xterm.css';
 import './styles/app.css';
 
 import { Workspace } from './app/Workspace';
-import { DEFAULT_CONFIG } from './config/config';
+import { loadConfig } from './config/config';
 
-const root = document.getElementById('app');
-if (!root) {
-    throw new Error('#app root element not found');
+async function main(): Promise<void> {
+    const root = document.getElementById('app');
+    if (!root) {
+        throw new Error('#app root element not found');
+    }
+
+    const config = await loadConfig();
+    const workspace = new Workspace(config);
+    root.appendChild(workspace.element);
+    await workspace.init();
 }
 
-const workspace = new Workspace(DEFAULT_CONFIG);
-root.appendChild(workspace.element);
-void workspace.init();
+void main();

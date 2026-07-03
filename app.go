@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 
+	"shellix/internal/config"
 	"shellix/internal/session"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -21,11 +22,18 @@ const (
 type App struct {
 	ctx      context.Context
 	sessions *session.Manager
+	config   *config.Store
 }
 
-// NewApp creates a new App with an empty session manager.
+// NewApp creates a new App with an empty session manager and config store.
 func NewApp() *App {
-	return &App{sessions: session.NewManager()}
+	store, err := config.NewStore()
+	if err != nil {
+		// A resolvable config path is best-effort; the frontend falls back to
+		// in-memory defaults if persistence is unavailable.
+		store = nil
+	}
+	return &App{sessions: session.NewManager(), config: store}
 }
 
 // startup wires the session manager's output/exit callbacks to Wails runtime
@@ -87,4 +95,30 @@ func (a *App) ResizeSession(id string, cols uint16, rows uint16) error {
 // CloseSession terminates a single session.
 func (a *App) CloseSession(id string) error {
 	return a.sessions.Close(id)
+}
+
+// GetConfig returns the persisted settings document, or an empty object when no
+// settings file exists yet.
+func (a *App) GetConfig() (config.Document, error) {
+	if a.config == nil {
+		return config.Document{}, nil
+	}
+	return a.config.Load()
+}
+
+// SaveConfig writes the settings document to disk as indented JSON.
+func (a *App) SaveConfig(doc config.Document) error {
+	if a.config == nil {
+		return nil
+	}
+	return a.config.Save(doc)
+}
+
+// GetConfigPath returns the absolute path of the settings file so the UI can
+// point users at the file they can hand-edit.
+func (a *App) GetConfigPath() string {
+	if a.config == nil {
+		return ""
+	}
+	return a.config.Path()
 }
