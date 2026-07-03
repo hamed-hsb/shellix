@@ -6,7 +6,7 @@ import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { Unicode11Addon } from '@xterm/addon-unicode11';
-import { Backend, type LocalSessionOptions } from '../backend/api';
+import { Backend, type SessionSpec } from '../backend/api';
 import {
     DEFAULT_APPEARANCE,
     DEFAULT_SCHEME,
@@ -17,8 +17,8 @@ import {
 export interface TerminalViewOptions {
     scheme?: ColorScheme;
     appearance?: Appearance;
-    /** Overrides for the local shell (shell path, cwd). */
-    session?: Omit<LocalSessionOptions, 'cols' | 'rows'>;
+    /** Connection to open; defaults to the OS local shell. */
+    spec?: SessionSpec;
 }
 
 type ExitListener = (message: string) => void;
@@ -31,6 +31,13 @@ export class TerminalView {
     private resizeObserver: ResizeObserver | null = null;
     private exitListeners: ExitListener[] = [];
     private disposed = false;
+    private connected = false;
+
+    /** True once the backend session was established (so its exit means the
+     *  remote/shell ended, not that the connection failed to open). */
+    get isConnected(): boolean {
+        return this.connected;
+    }
 
     constructor(private readonly opts: TerminalViewOptions = {}) {
         const appearance = opts.appearance ?? DEFAULT_APPEARANCE;
@@ -67,12 +74,19 @@ export class TerminalView {
         this.fit.fit();
 
         const { cols, rows } = this.term;
-        this.backend = await Backend.openLocal({
-            shell: this.opts.session?.shell,
-            cwd: this.opts.session?.cwd,
-            cols,
-            rows,
-        });
+        const spec: SessionSpec = this.opts.spec ?? { kind: 'local' };
+        try {
+            this.backend = await Backend.open(spec, { cols, rows });
+        } catch (err) {
+            // Connection failures (e.g. SSH auth/host errors) are shown inline
+            // rather than crashing the pane. The pane stays open so the user
+            // can read the message.
+            const msg = err instanceof Error ? err.message : String(err);
+            this.term.write(`\r\n\x1b[31mConnection failed: ${msg}\x1b[0m\r\n`);
+            for (const l of this.exitListeners) l(msg);
+            return;
+        }
+        this.connected = true;
 
         // Backend output -> terminal.
         this.backend.onData((bytes) => this.term.write(bytes));

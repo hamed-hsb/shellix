@@ -8,7 +8,29 @@ export interface CreateSessionRequest {
     rows: number;
 }
 
+export interface SSHSessionRequest {
+    host: string;
+    port: number;
+    user: string;
+    password: string;
+    privateKeyPem: string;
+    passphrase: string;
+    cols: number;
+    rows: number;
+}
+
+export interface TelnetSessionRequest {
+    host: string;
+    port: number;
+    cols: number;
+    rows: number;
+}
+
 export function CreateLocalSession(arg1: CreateSessionRequest): Promise<string>;
+
+export function CreateSSHSession(arg1: SSHSessionRequest): Promise<string>;
+
+export function CreateTelnetSession(arg1: TelnetSessionRequest): Promise<string>;
 
 export function SendInput(arg1: string, arg2: string): Promise<void>;
 
@@ -21,3 +43,7 @@ export function GetConfig(): Promise<Record<string, any>>;
 export function SaveConfig(arg1: Record<string, any>): Promise<void>;
 
 export function GetConfigPath(): Promise<string>;
+
+export function GetProfiles(): Promise<Array<Record<string, any>>>;
+
+export function SaveProfiles(arg1: Array<Record<string, any>>): Promise<void>;

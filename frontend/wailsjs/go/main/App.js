@@ -6,6 +6,14 @@ export function CreateLocalSession(arg1) {
     return window['go']['main']['App']['CreateLocalSession'](arg1);
 }
 
+export function CreateSSHSession(arg1) {
+    return window['go']['main']['App']['CreateSSHSession'](arg1);
+}
+
+export function CreateTelnetSession(arg1) {
+    return window['go']['main']['App']['CreateTelnetSession'](arg1);
+}
+
 export function SendInput(arg1, arg2) {
     return window['go']['main']['App']['SendInput'](arg1, arg2);
 }
@@ -28,4 +36,12 @@ export function SaveConfig(arg1) {
 
 export function GetConfigPath() {
     return window['go']['main']['App']['GetConfigPath']();
+}
+
+export function GetProfiles() {
+    return window['go']['main']['App']['GetProfiles']();
+}
+
+export function SaveProfiles(arg1) {
+    return window['go']['main']['App']['SaveProfiles'](arg1);
 }

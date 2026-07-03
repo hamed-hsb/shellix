@@ -3,20 +3,45 @@
 // Terminal output arrives as base64-encoded raw bytes over "session:data:<id>"
 // events; this module decodes them and exposes an ergonomic per-session API so
 // the rest of the frontend never touches window['go'] or the event bus
-// directly.
+// directly. A session may be a local shell, SSH or Telnet — all share the same
+// data/exit event contract once created.
 
 import {
     CreateLocalSession,
+    CreateSSHSession,
+    CreateTelnetSession,
     SendInput,
     ResizeSession,
     CloseSession,
-    type CreateSessionRequest,
 } from '../../wailsjs/go/main/App';
 import { EventsOn, EventsOff } from '../../wailsjs/runtime/runtime';
 
-export interface LocalSessionOptions {
+export interface LocalSpec {
+    kind: 'local';
     shell?: string;
     cwd?: string;
+}
+
+export interface SSHSpec {
+    kind: 'ssh';
+    host: string;
+    port?: number;
+    user: string;
+    password?: string;
+    privateKeyPem?: string;
+    passphrase?: string;
+}
+
+export interface TelnetSpec {
+    kind: 'telnet';
+    host: string;
+    port?: number;
+}
+
+/** A connection description resolved into a live backend session. */
+export type SessionSpec = LocalSpec | SSHSpec | TelnetSpec;
+
+interface Dimensions {
     cols: number;
     rows: number;
 }
@@ -34,24 +59,48 @@ function base64ToBytes(b64: string): Uint8Array {
     return bytes;
 }
 
+async function createSession(spec: SessionSpec, dim: Dimensions): Promise<string> {
+    switch (spec.kind) {
+        case 'local':
+            return CreateLocalSession({
+                shell: spec.shell ?? '',
+                cwd: spec.cwd ?? '',
+                cols: dim.cols,
+                rows: dim.rows,
+            });
+        case 'ssh':
+            return CreateSSHSession({
+                host: spec.host,
+                port: spec.port ?? 22,
+                user: spec.user,
+                password: spec.password ?? '',
+                privateKeyPem: spec.privateKeyPem ?? '',
+                passphrase: spec.passphrase ?? '',
+                cols: dim.cols,
+                rows: dim.rows,
+            });
+        case 'telnet':
+            return CreateTelnetSession({
+                host: spec.host,
+                port: spec.port ?? 23,
+                cols: dim.cols,
+                rows: dim.rows,
+            });
+    }
+}
+
 /**
  * Backend represents a single live terminal session in the Go process. It is
- * obtained from openLocalSession() and drives one xterm.js instance.
+ * obtained from Backend.open() and drives one xterm.js instance.
  */
 export class Backend {
     private disposed = false;
 
     private constructor(public readonly id: string) {}
 
-    /** Open a local shell session and resolve once the backend has its ID. */
-    static async openLocal(opts: LocalSessionOptions): Promise<Backend> {
-        const req: CreateSessionRequest = {
-            shell: opts.shell ?? '',
-            cwd: opts.cwd ?? '',
-            cols: opts.cols,
-            rows: opts.rows,
-        };
-        const id = await CreateLocalSession(req);
+    /** Open a session for the given spec and resolve once it has its ID. */
+    static async open(spec: SessionSpec, dim: Dimensions): Promise<Backend> {
+        const id = await createSession(spec, dim);
         return new Backend(id);
     }
 

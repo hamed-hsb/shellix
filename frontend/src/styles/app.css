@@ -237,3 +237,184 @@ body.resizing * {
 body.resizing .split-divider {
     pointer-events: auto;
 }
+
+/* ---- Command palette ---- */
+
+.palette-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 12vh;
+    background-color: rgba(1, 4, 9, 0.5);
+}
+
+.palette-panel {
+    width: min(620px, 90vw);
+    max-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--sx-bg-elevated);
+    border: 1px solid var(--sx-border);
+    border-radius: 8px;
+    box-shadow: 0 16px 48px rgba(1, 4, 9, 0.6);
+    overflow: hidden;
+}
+
+.palette-input {
+    border: none;
+    border-bottom: 1px solid var(--sx-border);
+    background: transparent;
+    color: var(--sx-fg);
+    font-size: 15px;
+    padding: 12px 14px;
+    outline: none;
+}
+
+.palette-list {
+    overflow-y: auto;
+}
+
+.palette-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 14px;
+    font-size: 13px;
+    color: var(--sx-fg);
+    cursor: pointer;
+}
+
+.palette-selected {
+    background-color: rgba(88, 166, 255, 0.16);
+}
+
+.palette-item-hint {
+    color: var(--sx-fg-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ---- Connection dialog ---- */
+
+.dialog-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 110;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(1, 4, 9, 0.55);
+}
+
+.dialog-panel {
+    width: min(460px, 92vw);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+    background-color: var(--sx-bg-elevated);
+    border: 1px solid var(--sx-border);
+    border-radius: 8px;
+    box-shadow: 0 16px 48px rgba(1, 4, 9, 0.6);
+}
+
+.dialog-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.dialog-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.dialog-label {
+    font-size: 12px;
+    color: var(--sx-fg-muted);
+}
+
+.dialog-input {
+    background-color: var(--sx-bg);
+    border: 1px solid var(--sx-border);
+    border-radius: 5px;
+    color: var(--sx-fg);
+    font-size: 13px;
+    padding: 7px 9px;
+    outline: none;
+}
+
+.dialog-input:focus {
+    border-color: var(--sx-accent);
+}
+
+.dialog-textarea {
+    resize: vertical;
+    font-family: monospace;
+}
+
+.dialog-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.dialog-btn {
+    border: 1px solid var(--sx-border);
+    background-color: var(--sx-bg);
+    color: var(--sx-fg);
+    border-radius: 5px;
+    padding: 7px 16px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.dialog-btn:hover {
+    border-color: var(--sx-fg-muted);
+}
+
+.dialog-btn-primary {
+    background-color: var(--sx-accent);
+    border-color: var(--sx-accent);
+    color: #04101f;
+    font-weight: 600;
+}
+
+/* ---- Toast ---- */
+
+.toast-container {
+    position: fixed;
+    bottom: 18px;
+    right: 18px;
+    z-index: 120;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.toast {
+    background-color: var(--sx-bg-elevated);
+    border: 1px solid var(--sx-border);
+    border-radius: 6px;
+    color: var(--sx-fg);
+    font-size: 12px;
+    padding: 9px 13px;
+    max-width: 60vw;
+    word-break: break-all;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.toast-visible {
+    opacity: 1;
+    transform: translateY(0);
+}

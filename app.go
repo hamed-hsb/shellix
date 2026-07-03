@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 
 	"shellix/internal/config"
+	"shellix/internal/profile"
 	"shellix/internal/session"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -23,17 +24,21 @@ type App struct {
 	ctx      context.Context
 	sessions *session.Manager
 	config   *config.Store
+	profiles *profile.Store
 }
 
-// NewApp creates a new App with an empty session manager and config store.
+// NewApp creates a new App with an empty session manager, config and profile
+// stores.
 func NewApp() *App {
-	store, err := config.NewStore()
-	if err != nil {
-		// A resolvable config path is best-effort; the frontend falls back to
-		// in-memory defaults if persistence is unavailable.
-		store = nil
+	// A resolvable path is best-effort; the frontend falls back to in-memory
+	// defaults if persistence is unavailable.
+	configStore, _ := config.NewStore()
+	profileStore, _ := profile.NewStore()
+	return &App{
+		sessions: session.NewManager(),
+		config:   configStore,
+		profiles: profileStore,
 	}
-	return &App{sessions: session.NewManager(), config: store}
 }
 
 // startup wires the session manager's output/exit callbacks to Wails runtime
@@ -81,6 +86,50 @@ func (a *App) CreateLocalSession(req CreateSessionRequest) (string, error) {
 	})
 }
 
+// SSHSessionRequest carries the options for opening a remote SSH terminal.
+type SSHSessionRequest struct {
+	Host          string `json:"host"`
+	Port          int    `json:"port"`
+	User          string `json:"user"`
+	Password      string `json:"password"`
+	PrivateKeyPEM string `json:"privateKeyPem"`
+	Passphrase    string `json:"passphrase"`
+	Cols          uint16 `json:"cols"`
+	Rows          uint16 `json:"rows"`
+}
+
+// CreateSSHSession opens a remote SSH shell and returns its session ID.
+func (a *App) CreateSSHSession(req SSHSessionRequest) (string, error) {
+	return a.sessions.CreateSSH(session.SSHConfig{
+		Host:          req.Host,
+		Port:          req.Port,
+		User:          req.User,
+		Password:      req.Password,
+		PrivateKeyPEM: []byte(req.PrivateKeyPEM),
+		Passphrase:    req.Passphrase,
+		Cols:          req.Cols,
+		Rows:          req.Rows,
+	})
+}
+
+// TelnetSessionRequest carries the options for opening a Telnet terminal.
+type TelnetSessionRequest struct {
+	Host string `json:"host"`
+	Port int    `json:"port"`
+	Cols uint16 `json:"cols"`
+	Rows uint16 `json:"rows"`
+}
+
+// CreateTelnetSession opens a Telnet connection and returns its session ID.
+func (a *App) CreateTelnetSession(req TelnetSessionRequest) (string, error) {
+	return a.sessions.CreateTelnet(session.TelnetConfig{
+		Host: req.Host,
+		Port: req.Port,
+		Cols: req.Cols,
+		Rows: req.Rows,
+	})
+}
+
 // SendInput forwards user keystrokes to a session. The data is a UTF-8 string as
 // produced by xterm.js's onData handler.
 func (a *App) SendInput(id string, data string) error {
@@ -121,4 +170,20 @@ func (a *App) GetConfigPath() string {
 		return ""
 	}
 	return a.config.Path()
+}
+
+// GetProfiles returns the saved connection profiles.
+func (a *App) GetProfiles() ([]profile.Profile, error) {
+	if a.profiles == nil {
+		return []profile.Profile{}, nil
+	}
+	return a.profiles.Load()
+}
+
+// SaveProfiles persists the full list of connection profiles.
+func (a *App) SaveProfiles(list []profile.Profile) error {
+	if a.profiles == nil {
+		return nil
+	}
+	return a.profiles.Save(list)
 }

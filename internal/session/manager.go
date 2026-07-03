@@ -63,6 +63,33 @@ func (m *Manager) CreateLocal(cfg LocalConfig) (string, error) {
 	return m.register(backend), nil
 }
 
+// CreateSSH opens a remote shell over SSH and starts streaming its output.
+func (m *Manager) CreateSSH(cfg SSHConfig) (string, error) {
+	backend, err := newSSHBackend(cfg)
+	if err != nil {
+		return "", err
+	}
+	return m.register(backend), nil
+}
+
+// CreateTelnet opens a Telnet connection and starts streaming its output.
+func (m *Manager) CreateTelnet(cfg TelnetConfig) (string, error) {
+	backend, err := newTelnetBackend(cfg)
+	if err != nil {
+		return "", err
+	}
+	return m.register(backend), nil
+}
+
+// CreateSerial opens a serial-port session (Phase 3, not yet implemented).
+func (m *Manager) CreateSerial(cfg SerialConfig) (string, error) {
+	backend, err := newSerialBackend(cfg)
+	if err != nil {
+		return "", err
+	}
+	return m.register(backend), nil
+}
+
 // register stores a backend as a session and starts its read loop.
 func (m *Manager) register(backend Backend) string {
 	s := &Session{ID: uuid.NewString(), backend: backend}

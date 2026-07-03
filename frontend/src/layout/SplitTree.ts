@@ -41,11 +41,20 @@ export class SplitTree {
     /** Invoked when focus moves to a different leaf. */
     onActiveChange: (() => void) | null = null;
 
-    constructor(private readonly makeLeaf: LeafFactory) {
+    /**
+     * @param makeLeaf   factory for panes created by splitting (default local shell)
+     * @param makeFirst  factory for the initial pane; defaults to makeLeaf. Lets
+     *                   a tab open on e.g. an SSH session while later splits open
+     *                   local shells.
+     */
+    constructor(
+        private readonly makeLeaf: LeafFactory,
+        makeFirst?: LeafFactory,
+    ) {
         this.element = document.createElement('div');
         this.element.className = 'split-root';
 
-        const leaf = this.createLeaf();
+        const leaf = this.createLeaf(makeFirst ?? makeLeaf);
         this.root = leaf;
         this.active = leaf;
         this.element.appendChild(leaf.el);
@@ -128,8 +137,8 @@ export class SplitTree {
         this.fitAll();
     }
 
-    private createLeaf(): Leaf {
-        const view = this.makeLeaf();
+    private createLeaf(factory: LeafFactory = this.makeLeaf): Leaf {
+        const view = factory();
         const el = document.createElement('div');
         el.className = 'pane-leaf';
         el.appendChild(view.element);
@@ -140,7 +149,12 @@ export class SplitTree {
         el.addEventListener('focusin', () => this.setActive(leaf));
         el.addEventListener('mousedown', () => this.setActive(leaf), true);
 
-        view.onExit(() => this.closeLeaf(leaf));
+        // Auto-close the pane when a *connected* session ends (shell exited).
+        // A connection that never opened (e.g. SSH auth failure) keeps its pane
+        // so the user can read the error.
+        view.onExit(() => {
+            if (view.isConnected) this.closeLeaf(leaf);
+        });
         return leaf;
     }
 
