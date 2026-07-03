@@ -1,49 +1,16 @@
-import './style.css';
-import './app.css';
+// Phase 1 entry point: open a single local-shell terminal that fills the
+// window. Phase 2 replaces this with the tabbed, splittable workspace.
 
-import logo from './assets/images/logo-universal.png';
-import {Greet} from '../wailsjs/go/main/App';
+import '@xterm/xterm/css/xterm.css';
+import './styles/app.css';
 
-// Setup the greet function
-window.greet = function () {
-    // Get name
-    let name = nameElement!.value;
+import { TerminalView } from './terminal/TerminalView';
 
-    // Check if the input is empty
-    if (name === "") return;
-
-    // Call App.Greet(name)
-    try {
-        Greet(name)
-            .then((result) => {
-                // Update result with data back from App.Greet()
-                resultElement!.innerText = result;
-            })
-            .catch((err) => {
-                console.error(err);
-            });
-    } catch (err) {
-        console.error(err);
-    }
-};
-
-document.querySelector('#app')!.innerHTML = `
-    <img id="logo" class="logo">
-      <div class="result" id="result">Please enter your name below 👇</div>
-      <div class="input-box" id="input">
-        <input class="input" id="name" type="text" autocomplete="off" />
-        <button class="btn" onclick="greet()">Greet</button>
-      </div>
-    </div>
-`;
-(document.getElementById('logo') as HTMLImageElement).src = logo;
-
-let nameElement = (document.getElementById("name") as HTMLInputElement);
-nameElement.focus();
-let resultElement = document.getElementById("result");
-
-declare global {
-    interface Window {
-        greet: () => void;
-    }
+const root = document.getElementById('app');
+if (!root) {
+    throw new Error('#app root element not found');
 }
+
+const view = new TerminalView();
+root.appendChild(view.element);
+void view.start();
